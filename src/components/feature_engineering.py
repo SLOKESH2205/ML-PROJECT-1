@@ -36,36 +36,23 @@ def build_features(df: pd.DataFrame):
         tenure["tenure"] = (tenure["max_date"] - tenure["min_date"]).dt.days
         rfm = rfm.merge(tenure[["customer_id", "tenure"]], on="customer_id", how="left")
 
-        # avg order value
-        rfm["avg_order_value"] = rfm["monetary"] / rfm["frequency"]
+        rfm["avg_gap"] = rfm["avg_gap"].fillna(rfm["avg_gap"].max())
+        rfm["avg_gap_log"] = np.log1p(rfm["avg_gap"])
 
+        # avg order value
+        rfm["avg_order_value"] = rfm["monetary"] / rfm["frequency"].replace(0, 1)
         # unique items
         items = df.groupby("customer_id")["stockcode"].nunique().reset_index()
         items.rename(columns={"stockcode": "unique_items_purchased"}, inplace=True)
         rfm = rfm.merge(items, on="customer_id", how="left")
-
         # log transforms
         for col in ["recency", "frequency", "monetary"]:
             rfm[f"{col}_log"] = np.log1p(rfm[col])
 
-        # FINAL MODEL FEATURES (discipline)
-        model_features = [
-            "recency_log",
-            "frequency_log",
-            "monetary_log",
-            "tenure",
-            "avg_order_value",
-            "unique_items_purchased"
-        ]
-
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(rfm[model_features])
-
-        X_scaled = pd.DataFrame(X_scaled, columns=model_features)
 
         logging.info("Feature engineering completed")
 
-        return rfm, X_scaled, scaler
+        return rfm
 
     except Exception as e:
         raise CustomException(e, sys)
