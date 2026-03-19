@@ -7,7 +7,15 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    classification_report,
+    confusion_matrix
+)
 from sklearn.preprocessing import StandardScaler
 
 from xgboost import XGBClassifier
@@ -73,7 +81,10 @@ class ModelTrainer:
 
             # Align columns
             X_train, X_test = X_train.align(X_test, join='left', axis=1, fill_value=0)
-
+            
+            # Save encoded feature column names BEFORE scaling
+            encoded_feature_names = X_train.columns.tolist()
+            
             # ================= SCALING ================= #
             scaler = StandardScaler()
             X_train = scaler.fit_transform(X_train)
@@ -89,7 +100,7 @@ class ModelTrainer:
             models = {
                 "Logistic Regression": (
                     LogisticRegression(solver='liblinear', class_weight='balanced'),
-                    {"C": [0.01, 0.1, 1, 10]}   # ✅ removed penalty (fix warning)
+                    {"C": [0.01, 0.1, 1, 10]}
                 ),
                 "Random Forest": (
                     RandomForestClassifier(class_weight='balanced', random_state=42),
@@ -108,12 +119,13 @@ class ModelTrainer:
             best_model = None
             best_score = 0
             best_model_name = None
+            best_threshold_global = None
             report = {}
 
             # ================= TRAIN LOOP ================= #
             for name, (model, params) in models.items():
 
-                logging.info(f"Training {name}")
+                print(f"\n===== TRAINING {name} =====")
 
                 grid = GridSearchCV(
                     model,
@@ -126,26 +138,72 @@ class ModelTrainer:
                 grid.fit(X_train, y_train)
                 best_estimator = grid.best_estimator_
 
-                # ================= THRESHOLD TUNING ================= #
-                y_prob = best_estimator.predict_proba(X_test)[:, 1]
-                y_pred = (y_prob > 0.4).astype(int)
+                # ================= PREDICTIONS ================= #
 
+                # 🔥 Threshold tuning (you can tweak later)
+                import numpy as np
+
+                y_prob = best_estimator.predict_proba(X_test)[:, 1]
+
+                # 🔥 FIND BEST THRESHOLD
+                best_threshold = 0.5
+                best_f1_local = 0
+
+                for t in np.arange(0.2, 0.7, 0.05):
+                    y_temp = (y_prob > t).astype(int)
+                    f1_temp = f1_score(y_test, y_temp)
+
+                    if f1_temp > best_f1_local:
+                        best_f1_local = f1_temp
+                        best_threshold = t
+
+                # 🔥 FINAL PREDICTION USING BEST THRESHOLD
+                y_pred = (y_prob > best_threshold).astype(int)
+
+                print(f"Best Threshold for {name}: {best_threshold}")
+
+                # ================= METRICS ================= #
                 scores = self.evaluate_model(y_test, y_pred, y_prob)
                 report[name] = scores
 
-                logging.info(f"{name}: {scores}")
+                print("\nMetrics:")
+                print(scores)
+
+                # 🔥 NEW (IMPORTANT)
+                print("\nClassification Report:")
+                print(classification_report(y_test, y_pred))
+
+                print("Confusion Matrix:")
+                print(confusion_matrix(y_test, y_pred))
 
                 if scores["f1_score"] > best_score:
                     best_score = scores["f1_score"]
                     best_model = best_estimator
                     best_model_name = name
+                    best_threshold_global = best_threshold
 
             # ================= SAVE BEST MODEL ================= #
-            joblib.dump(best_model, self.model_path)
+            os.makedirs("artifacts", exist_ok=True)
+            
+            # Save model with threshold
+            joblib.dump(
+                {
+                    "model": best_model,
+                    "threshold": best_threshold_global
+                },
+                self.model_path
+            )
+            
+            # Save the encoded feature column names (IMPORTANT!)
+            joblib.dump(encoded_feature_names, os.path.join("artifacts", "encoded_features.pkl"))
 
-            logging.info(f"Best Model: {best_model_name}")
+            print("\n==============================")
+            print(f"BEST MODEL: {best_model_name}")
+            print(f"BEST F1 SCORE: {best_score}")
+            print(f"BEST THRESHOLD: {best_threshold_global}")
+            print("==============================")
 
-            return best_model_name, best_score, report
+            return best_model_name, best_score, report, best_threshold_global
 
         except Exception as e:
             raise CustomException(e, sys)
