@@ -426,6 +426,12 @@ if uploaded_file:
         clf_metrics = live_metrics
         if clf_metrics["accuracy"] is None:
             st.warning("Threshold-based evaluation metrics are not available because actual labels are not present in the current result set.")
+            st.info(
+                "This dataset does not contain actual churn labels.\n\n"
+                "The model outputs predicted churn probabilities, but evaluation metrics "
+                "(accuracy, precision, recall) require known outcomes.\n\n"
+                "In real-world deployment, these metrics are computed after observing actual customer behavior over time."
+            )
 
         perf_col1, perf_col2, perf_col3, perf_col4, perf_col5 = st.columns(5)
         perf_col1.metric("Accuracy", round(clf_metrics["accuracy"], 2) if clf_metrics["accuracy"] is not None else "NA")
