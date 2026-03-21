@@ -7,7 +7,6 @@ if __name__ == "__main__":
 
     pipe = PredictPipeline()
 
-    preds, probs = pipe.predict(df)
+    results = pipe.predict(df)
 
-    print("Predictions:", preds[:10])
-    print("Probabilities:", probs[:10])
+    print(results.head(10).to_string())
