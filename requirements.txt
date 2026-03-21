@@ -3,5 +3,9 @@ numpy
 scikit-learn
 matplotlib
 seaborn
+streamlit
+shap
+xgboost
+openpyxl
 
 -e .
