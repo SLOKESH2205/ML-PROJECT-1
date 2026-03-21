@@ -228,12 +228,13 @@ st.set_page_config(
 
 with st.sidebar:
     st.title("Decision Controls")
-    confidence_threshold = st.slider(
-        "Churn Probability Threshold",
+    threshold = st.slider(
+        "Churn Decision Threshold",
         min_value=0.0,
         max_value=1.0,
-        value=0.35,
+        value=0.50,
         step=0.05,
+        help="Higher threshold = fewer customers targeted (higher precision). Lower threshold = more customers targeted (higher recall).",
     )
     intervention_save_rate = st.slider(
         "Expected Save Rate",
@@ -274,9 +275,15 @@ if uploaded_file:
         model_service = train_dynamic_model(processed_df)
         result_df = model_service.score_customer_df(processed_df)
         result_df["Churn_Label"] = (
-            result_df["Churn Probability"] >= confidence_threshold
+            result_df["Churn Probability"] >= threshold
         ).astype(int)
         st.success("Model trained dynamically on uploaded data")
+        st.info(
+            "Threshold Trade-off:\n\n"
+            "- Lower threshold -> capture more churn customers (high recall) but more false positives\n"
+            "- Higher threshold -> fewer false positives (high precision) but may miss some churners\n\n"
+            "Use this control to balance marketing cost versus retention coverage."
+        )
 
         segment_outputs = compute_segment_outputs(result_df)
         explainability = model_service.explain_feature_importance(top_n=10)
@@ -363,6 +370,11 @@ if uploaded_file:
         churn_col1.metric("Predicted Churn Customers", predicted_churn)
         churn_col2.metric("Portfolio Churn Rate", f"{churn_rate:.2f}%")
         churn_col3.metric("Avg Churn Probability", f"{result_df['Churn Probability'].mean() * 100:.2f}%")
+
+        st.markdown("### Targeting Impact")
+        target_col1, target_col2 = st.columns(2)
+        target_col1.metric("Customers Targeted", predicted_churn)
+        target_col2.metric("Target Rate (%)", f"{churn_rate:.2f}")
         st.dataframe(
             result_df.sort_values("Churn Probability", ascending=False).head(20),
             use_container_width=True,
