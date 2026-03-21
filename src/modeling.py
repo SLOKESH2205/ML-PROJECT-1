@@ -5,7 +5,16 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import f1_score
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
@@ -19,6 +28,20 @@ class DynamicChurnArtifacts:
     train_columns: List[str]
     threshold: float
     model_name: str = "Random Forest"
+    evaluation_metrics: Dict[str, float] | None = None
+    confusion_matrix: List[List[int]] | None = None
+    roc_curve_points: Dict[str, List[float]] | None = None
+    classification_report_text: str = ""
+
+
+def evaluate_classification(y_true, y_pred, y_proba) -> Dict[str, float]:
+    return {
+        "accuracy": float(accuracy_score(y_true, y_pred)),
+        "precision": float(precision_score(y_true, y_pred, zero_division=0)),
+        "recall": float(recall_score(y_true, y_pred, zero_division=0)),
+        "f1_score": float(f1_score(y_true, y_pred, zero_division=0)),
+        "roc_auc": float(roc_auc_score(y_true, y_proba)) if len(np.unique(y_true)) > 1 else float("nan"),
+    }
 
 
 class ChurnModelService:
@@ -30,6 +53,10 @@ class ChurnModelService:
         self.train_columns = artifacts.train_columns
         self.threshold = artifacts.threshold
         self.model_name = artifacts.model_name
+        self.evaluation_metrics = artifacts.evaluation_metrics or {}
+        self.confusion_matrix = artifacts.confusion_matrix or []
+        self.roc_curve_points = artifacts.roc_curve_points or {}
+        self.classification_report_text = artifacts.classification_report_text
         self.last_processed_df = None
         self.features = artifacts.train_columns
 
@@ -68,6 +95,10 @@ class ChurnModelService:
 
         best_threshold = 0.5
         best_f1 = -1.0
+        best_metrics = {}
+        best_confusion = []
+        best_report = ""
+        best_roc_curve = {}
         if y_test.nunique() > 1:
             y_prob = model.predict_proba(X_test_scaled)[:, 1]
             for threshold in np.arange(0.2, 0.75, 0.05):
@@ -77,11 +108,25 @@ class ChurnModelService:
                     best_f1 = score
                     best_threshold = float(threshold)
 
+            final_pred = (y_prob >= best_threshold).astype(int)
+            best_metrics = evaluate_classification(y_test, final_pred, y_prob)
+            best_confusion = confusion_matrix(y_test, final_pred).tolist()
+            best_report = classification_report(y_test, final_pred, zero_division=0)
+            fpr, tpr, _ = roc_curve(y_test, y_prob)
+            best_roc_curve = {
+                "fpr": fpr.tolist(),
+                "tpr": tpr.tolist(),
+            }
+
         artifacts = DynamicChurnArtifacts(
             model=model,
             scaler=scaler,
             train_columns=model_df.columns.tolist(),
             threshold=best_threshold,
+            evaluation_metrics=best_metrics,
+            confusion_matrix=best_confusion,
+            roc_curve_points=best_roc_curve,
+            classification_report_text=best_report,
         )
         return cls(artifacts)
 

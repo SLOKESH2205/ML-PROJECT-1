@@ -4,9 +4,10 @@ from io import BytesIO
 import pandas as pd
 import streamlit as st
 
+from src.clustering import evaluate_clustering
 from src.components.segment_analytics import analyze_segments
 from src.modeling import ChurnModelService
-from src.preprocessing import build_customer_features
+from src.preprocessing import CLUSTER_FEATURE_COLUMNS, build_customer_features
 
 
 logging.basicConfig(level=logging.INFO)
@@ -28,10 +29,17 @@ def compute_segment_outputs(result_df: pd.DataFrame):
 @st.cache_data
 def preprocess_uploaded_data(raw_df: pd.DataFrame):
     processed_df, kmeans_model = build_customer_features(raw_df)
+    clustering_metrics = evaluate_clustering(
+        processed_df[CLUSTER_FEATURE_COLUMNS],
+        processed_df["final_kmeans_cluster"],
+    )
+    if hasattr(kmeans_model, "inertia_"):
+        clustering_metrics["inertia"] = float(kmeans_model.inertia_)
     clustering_meta = {
         "selected_k": int(getattr(kmeans_model, "selected_k_", kmeans_model.n_clusters)),
         "selection_summary": getattr(kmeans_model, "selection_summary_", []),
         "nan_summary": processed_df.attrs.get("nan_summary", pd.Series(dtype=int)).to_dict(),
+        "clustering_metrics": clustering_metrics,
     }
     return processed_df, clustering_meta
 
@@ -331,6 +339,47 @@ if uploaded_file:
         )
 
         render_section_header(
+            "Model Performance",
+            "Clustering quality and churn-model validation metrics are shown here so the pipeline can be evaluated, not just demonstrated.",
+        )
+        clustering_metrics = clustering_meta.get("clustering_metrics", {})
+        cluster_col1, cluster_col2, cluster_col3 = st.columns(3)
+        cluster_col1.metric(
+            "Silhouette Score",
+            f"{clustering_metrics.get('silhouette_score', float('nan')):.3f}",
+        )
+        cluster_col2.metric(
+            "Davies-Bouldin Index",
+            f"{clustering_metrics.get('davies_bouldin_index', float('nan')):.3f}",
+        )
+        cluster_col3.metric(
+            "Inertia",
+            f"{clustering_metrics.get('inertia', float('nan')):.1f}",
+        )
+
+        clf_metrics = model_service.evaluation_metrics
+        perf_col1, perf_col2, perf_col3, perf_col4, perf_col5 = st.columns(5)
+        perf_col1.metric("Accuracy", f"{clf_metrics.get('accuracy', float('nan')):.2f}")
+        perf_col2.metric("Precision", f"{clf_metrics.get('precision', float('nan')):.2f}")
+        perf_col3.metric("Recall", f"{clf_metrics.get('recall', float('nan')):.2f}")
+        perf_col4.metric("F1 Score", f"{clf_metrics.get('f1_score', float('nan')):.2f}")
+        perf_col5.metric("ROC-AUC", f"{clf_metrics.get('roc_auc', float('nan')):.2f}")
+
+        if model_service.confusion_matrix:
+            st.markdown("**Confusion Matrix**")
+            confusion_df = pd.DataFrame(
+                model_service.confusion_matrix,
+                index=["Actual 0", "Actual 1"],
+                columns=["Pred 0", "Pred 1"],
+            )
+            st.dataframe(confusion_df, use_container_width=True)
+
+        if model_service.roc_curve_points:
+            st.markdown("**ROC Curve**")
+            roc_df = pd.DataFrame(model_service.roc_curve_points)
+            st.line_chart(roc_df.rename(columns={"fpr": "False Positive Rate", "tpr": "True Positive Rate"}))
+
+        render_section_header(
             "Feature Importance / Explainability",
             "Tree-model importance ranks the strongest churn drivers so the model output can be linked to interpretable customer behavior.",
         )
@@ -479,6 +528,10 @@ if uploaded_file:
                     ),
                     use_container_width=True,
                 )
+
+            if model_service.classification_report_text:
+                st.markdown("**Classification Report**")
+                st.code(model_service.classification_report_text)
 
             try:
                 import matplotlib.pyplot as plt

@@ -4,10 +4,18 @@ from typing import Dict, Iterable, Tuple
 import joblib
 import pandas as pd
 from sklearn.cluster import KMeans, MiniBatchKMeans
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import davies_bouldin_score, silhouette_score
 from sklearn.mixture import GaussianMixture
 
 from src.preprocessing import CLUSTER_FEATURE_COLUMNS
+
+
+def evaluate_clustering(X: pd.DataFrame, labels) -> Dict[str, float]:
+    return {
+        "silhouette_score": float(silhouette_score(X, labels)),
+        "davies_bouldin_index": float(davies_bouldin_score(X, labels)),
+        "inertia": float("nan"),
+    }
 
 
 class SegmentClusterer:

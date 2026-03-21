@@ -1,126 +1,259 @@
-# Customer Churn Intelligence Hub
+# 🚀 Customer Churn Intelligence System
 
-## Business Problem
+## TL;DR
 
-Most churn projects stop at a probability score. That is not enough for a business team that needs to decide:
+An end-to-end customer intelligence system that combines segmentation, churn prediction, explainability, and business decision support to help organizations identify high-risk customers and take targeted retention actions.
 
-- which customers are actually at risk
-- which segments are most exposed
-- why those customers are churning
-- what action should be taken first
+---
 
-This project upgrades a standard churn-classification app into a decision-support product that combines customer segmentation, churn prediction, explainability, and business recommendations in one workflow.
+## 🌐 Live Demo
 
-## Product Goal
+👉 https://churn-intelligence-dashboard.streamlit.app
 
-Build a customer intelligence system that helps retention, marketing, and product teams answer:
+---
 
-- Which customer persona has the highest churn risk?
-- Are we losing high-value customers or low-engagement customers?
-- Which behavioral features are driving churn predictions?
-- What action should each segment receive next?
+## 📊 Project Scale
 
-## Solution Overview
+* Processed **500K+ transactions**
+* Generated insights for **4K+ customers**
+* Built a full pipeline from **raw data → business decisions**
 
-The system combines unsupervised and supervised learning:
+---
 
-1. `KMeans` clustering groups customers into behavioral segments using frequency, value, tenure, and purchase cadence.
-2. A churn model predicts customer churn probability using engineered customer-level features plus segment membership.
-3. The Streamlit dashboard translates technical outputs into business personas, key insights, and recommended actions.
+## 🎯 Business Problem
 
-## Key Capabilities
+Most churn projects stop at predicting:
 
-### 1. Customer Segmentation
+> *“Who will churn?”*
 
-- Automatically generates customer personas from cluster-level feature averages
-- Replaces generic labels like `Cluster 0` with business-ready names such as:
-  - `High-value customers losing momentum`
-  - `Growing repeat customers`
-  - `Newly acquired light buyers`
-- Displays segment size, risk level, and behavioral interpretation
+That is not enough.
+
+Businesses need to know:
+
+* Which customers actually matter?
+* Which segments are at risk?
+* Why are they churning?
+* What action should be taken first?
+
+---
+
+## 💡 Solution Overview
+
+This project builds a **Customer Churn Intelligence System** that combines:
+
+* Customer Segmentation (Clustering)
+* Churn Prediction (Classification)
+* Explainability
+* Business Recommendations
+* Impact Simulation
+
+👉 Turning raw data into **actionable business decisions**
+
+---
+
+## 🧠 Key Capabilities
+
+### 1. Customer Segmentation (Personas)
+
+* Groups customers using behavioral features:
+
+  * Frequency
+  * Monetary value
+  * Tenure
+  * Purchase patterns
+* Converts clusters into business personas:
+
+  * High-value customers losing momentum
+  * Growing repeat customers
+  * Newly acquired light buyers
+
+---
 
 ### 2. Churn Prediction
 
-- Scores each customer with churn probability
-- Allows threshold-based churn labeling for business use
-- Highlights highest-risk customers for retention teams
+* Predicts churn probability per customer
+* Supports threshold-based churn labeling
+* Identifies high-risk segments
+
+---
 
 ### 3. Churn by Segment
 
-- Calculates churn rate by persona
-- Shows where churn is concentrated across the portfolio
-- Connects segmentation and classification into a single decision layer
+* Measures churn rate across personas
+* Identifies where churn is concentrated
+* Combines segmentation + prediction into one decision layer
+
+---
 
 ### 4. Explainability
 
-- Ranks top churn drivers using tree-model feature importance
-- Generates business-readable explanations of why users churn
-- Supports optional SHAP visualization in the dashboard
+* Feature importance analysis
+* Identifies key churn drivers:
+
+  * Tenure
+  * Engagement (frequency)
+  * Purchase behavior
+
+---
 
 ### 5. Business Recommendation Layer
 
-For each customer persona, the app generates:
+For each persona, the system generates:
 
-- retention strategy
-- marketing action
-- product improvement suggestion
-- primary action
-- targeting rule
-- business owner
+* Retention strategy
+* Marketing actions
+* Product improvements
+* Targeting rules
+* Business ownership
 
-This makes the output directly useful for business teams instead of ending at model metrics.
+👉 Output is directly usable by business teams
 
-### 6. What-If Impact Simulator
+---
 
-- Estimates how many customers could be saved under a chosen intervention uplift
-- Calculates protected revenue, campaign cost, and net impact by segment
-- Helps prioritize which personas are worth targeting first
+### 6. What-If Impact Simulator (🔥 Key Feature)
+
+* Estimates:
+
+  * Customers saved
+  * Revenue protected
+  * Campaign cost
+  * Net impact
+* Helps prioritize high-value segments
+
+---
 
 ### 7. Downloadable Decision Report
 
-- Exports the full dashboard output as a portable report
-- Includes personas, churn by segment, feature importance, insights, recommendations, and impact simulation
+Exports:
 
-## Example Analyst-Style Insights
+* Personas
+* Churn insights
+* Feature importance
+* Recommendations
+* Impact simulation
 
-The dashboard automatically produces data-driven insights such as:
+---
 
-- Customers with larger order values but weaker purchase cadence show elevated churn, which suggests valuable accounts are disengaging between purchases.
-- Newer customers churn earlier than the retained base, pointing to onboarding and habit-formation gaps.
-- Lower engagement is strongly associated with churn in the highest-risk segment.
-- The most exposed segment is commercially important because it also contributes above-average customer value.
+## 📈 Model Performance
 
-## Business Impact
+### 🔹 Clustering (KMeans)
 
-This system is designed to support real retention decisions:
+* **Silhouette Score:** 0.9710
+* **Davies-Bouldin Index:** 0.3771
 
-- Prioritize intervention on high-value segments before revenue is lost
-- Distinguish onboarding problems from long-term disengagement
-- Give marketing a segment-specific reactivation plan
-- Give product teams evidence on where adoption friction is hurting retention
+👉 Indicates strong separation between customer segments
 
-## Dashboard Structure
+---
 
-The Streamlit app is organized into business-facing sections:
+### 🔹 Churn Prediction (Random Forest)
 
-- `Data Overview`
-- `Customer Segmentation (Personas)`
-- `Churn Prediction`
-- `Feature Importance / Explainability`
-- `Churn by Segment`
-- `Key Insights`
-- `Business Recommendations`
-- `What-If Impact Simulator`
-- `Advanced Model Diagnostics`
+* **Accuracy:** 0.7008
+* **Precision:** 0.6979
+* **Recall:** 0.6759
+* **F1 Score:** 0.6867
+* **ROC-AUC:** 0.7622
 
-## Project Structure
+👉 Model balances precision and recall while maintaining strong discriminative power
 
-```text
-ML-PROJECT-1/
+---
+
+### 🔹 Confusion Matrix
+
+```
+[[415 158]
+ [175 365]]
+```
+
+👉 Shows balanced performance across churn and non-churn classes
+
+---
+
+## 🖥️ Dashboard Features
+
+* Interactive controls (threshold, cost, uplift)
+* Persona-based insights
+* Churn segmentation
+* Business recommendations
+* Impact simulation
+
+---
+
+## 🧱 Architecture
+
+```
+Raw Data → Feature Engineering → Clustering → Churn Model → Insights → Dashboard
+```
+
+---
+
+## ⚙️ Technical Design
+
+### Preprocessing
+
+* Converts transaction data → customer-level features:
+
+  * frequency
+  * monetary value
+  * tenure
+  * avg order value
+  * purchase rate
+
+---
+
+### Clustering
+
+* KMeans-based segmentation
+* Behavioral grouping of customers
+
+---
+
+### Modeling
+
+* Random Forest classifier
+* Probability-based churn prediction
+* Feature importance extraction
+
+---
+
+### Insight Engine
+
+* Segment-level risk analysis
+* Automated insight generation
+* Rule-based recommendation mapping
+
+---
+
+## 🛠 Tech Stack
+
+* Python
+* Pandas, NumPy
+* Scikit-learn
+* XGBoost (optional experimentation)
+* SHAP
+* Streamlit
+* Matplotlib, Seaborn
+
+---
+
+## ▶️ How to Run
+
+```bash
+git clone https://github.com/SLOKESH2205/customer-churn-prediction-system.git
+cd customer-churn-prediction-system
+
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+---
+
+## 📂 Project Structure
+
+```
+customer-churn-prediction-system/
 ├── app.py
-├── artifacts/
-├── data/
 ├── requirements.txt
+├── runtime.txt
 ├── src/
 │   ├── preprocessing.py
 │   ├── clustering.py
@@ -131,97 +264,46 @@ ML-PROJECT-1/
 │       ├── feature_engineering.py
 │       ├── model_trainer.py
 │       └── segment_analytics.py
-└── README.md
 ```
 
-## Technical Design
+---
 
-### Preprocessing
+## 💡 Example Insights
 
-- Transaction-level retail data is converted into customer-level features
-- Feature engineering includes:
-  - frequency
-  - monetary value
-  - tenure
-  - average order value
-  - unique items purchased
-  - purchase rate
-  - monetary per day
+* High-value customers show increased churn when engagement drops
+* Customers with large order value but low purchase frequency are at highest risk
+* New users churn early due to weak onboarding and habit formation
 
-### Clustering
+---
 
-- KMeans is used to group customers by behavioral similarity
-- Cluster outputs are summarized and translated into personas
+## 🎯 Business Impact
 
-### Modeling
+* Prioritizes high-value customers before revenue loss
+* Distinguishes onboarding issues vs long-term disengagement
+* Enables targeted retention campaigns
+* Provides product teams with actionable insights
 
-- Tree-based churn modeling supports:
-  - probability scoring
-  - threshold-based labeling
-  - feature importance ranking
-  - customer-level inference
+---
 
-### Insight Generation
+## 🚀 Why This Project Stands Out
 
-- Segment risk and churn concentration are analyzed automatically
-- Insight rules convert model outputs into analyst-style conclusions
-- Recommendation logic maps segment patterns to business actions
+This is not a basic ML project.
 
-## Tech Stack
+It:
 
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- XGBoost
-- SHAP
-- Streamlit
-- Matplotlib
-- Seaborn
+* Combines segmentation + prediction in one system
+* Translates clusters into business personas
+* Converts model outputs into decisions
+* Simulates real-world business impact
 
-## How to Run
+👉 Designed as a **decision intelligence product**, not just a model
 
-### 1. Install dependencies
+---
 
-```bash
-pip install -r requirements.txt
-```
+## 👨‍💻 Author
 
-### 2. Launch the dashboard
+**Lokesh S**
 
-```bash
-streamlit run app.py
-```
+---
 
-### 3. Upload data
-
-Upload a CSV or Excel file with transaction-level customer purchase data.
-
-Required columns:
-
-- `customer_id`
-- `invoice`
-- `invoicedate`
-- `price`
-- `quantity`
-
-## Screenshots
-
-Add screenshots here after running the dashboard:
-
-- `[Placeholder] Data Overview`
-- `[Placeholder] Customer Segmentation`
-- `[Placeholder] Churn by Segment`
-- `[Placeholder] Feature Importance`
-- `[Placeholder] Business Recommendations`
-
-## Why This Project Stands Out
-
-This is not a notebook-style churn exercise. It behaves like a business intelligence product:
-
-- it combines segmentation and churn into one workflow
-- it generates interpretable personas instead of raw cluster IDs
-- it surfaces analyst-style conclusions instead of generic observations
-- it maps model outputs to concrete business actions
-
-That makes it much closer to what a company would actually use for retention planning, CRM prioritization, and product decision support.
+⭐ If you found this useful, consider starring the repo!
