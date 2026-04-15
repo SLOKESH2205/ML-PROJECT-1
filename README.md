@@ -346,19 +346,150 @@ customer-churn-prediction-system/
 * Provides product teams with actionable insights
 
 ---
+## 🧾 SQL-Based Business Analysis (Data Analyst Layer)
 
-## 🚀 Why This Project Stands Out
+This project extends beyond machine learning by incorporating a **structured SQL analytics layer** to extract business insights directly from the processed dataset.
 
-This is not a basic ML project.
+A total of **6 business-focused SQL modules** were designed, each addressing a specific decision-making objective.
 
-It:
+---
 
-* Combines segmentation + prediction in one system
-* Translates clusters into business personas
-* Converts model outputs into decisions
-* Simulates real-world business impact
+### 📊 1. Churn Overview Analysis
 
-👉 Designed as a **decision intelligence product**, not just a model
+* Calculates overall churn and retention rates
+* Analyzes churn across:
+
+  * Customer segments
+  * Customer value tiers
+  * Recency levels
+* Compares:
+
+  * ML-based predictions vs actual churn
+* Identifies overlap between:
+
+  * Rule-based risk and ML-based risk
+
+👉 Provides a **high-level health check of the customer base**
+
+---
+
+### 💰 2. Revenue Impact Analysis
+
+* Quantifies:
+
+  * Total revenue
+  * Revenue at risk due to churn
+* Breaks down risk across:
+
+  * ML risk segments
+  * Customer segments
+* Identifies:
+
+  * High-value customers contributing to revenue risk
+* Extracts **top 10 high-risk customers**
+
+👉 Bridges **churn prediction with financial impact**
+
+---
+
+### 👥 3. Customer Segmentation Analysis
+
+* Analyzes distribution of customers across RFM segments
+* Profiles each segment using:
+
+  * Recency, Frequency, Monetary value
+  * CLV and churn probability
+* Compares:
+
+  * Rule-based segmentation vs ML risk segmentation
+* Identifies:
+
+  * High-risk concentration within segments
+
+👉 Connects **behavioral segmentation with predictive modeling**
+
+---
+
+### 📉 4. Behavioral Pattern Analysis
+
+* Examines impact of:
+
+  * Purchase frequency
+  * Product diversity
+  * Order value
+* Analyzes:
+
+  * Recency vs churn probability
+  * Tenure vs churn risk
+* Identifies:
+
+  * One-time vs repeat buyer churn patterns
+  * High-value “Champion” customers at risk
+
+👉 Reveals **behavioral drivers behind churn**
+
+---
+
+### 🎯 5. Retention Targeting Strategy
+
+* Identifies **high-risk active customers** for intervention
+* Introduces a **priority scoring system** combining:
+
+  * Churn probability
+  * Revenue at risk
+* Segments customers into:
+
+  * High / Medium / Low priority
+* Estimates:
+
+  * Retention ROI
+* Suggests **actionable strategies**:
+
+  * Discounts
+  * Engagement campaigns
+  * VIP retention
+
+👉 Converts insights into **actionable business strategies**
+
+---
+
+### 🌍 6. Geographic Analysis
+
+* Analyzes:
+
+  * Revenue and customer distribution by country
+  * Churn rates across regions
+* Identifies:
+
+  * High-risk geographies
+  * Revenue concentration areas
+* Compares:
+
+  * UK vs Non-UK market behavior
+
+👉 Adds **regional intelligence for decision-making**
+
+---
+
+## 🔗 Integration with ML System
+
+The SQL layer works alongside the ML pipeline:
+
+* ML model → predicts churn probability
+* SQL queries → analyze patterns, segments, and revenue impact
+* Combined → **decision intelligence system**
+
+---
+
+## 🚀 Why This Matters
+
+Most churn projects stop at prediction.
+
+This system goes further by:
+
+* Quantifying **business impact**
+* Identifying **who to target first**
+* Providing **clear retention strategies**
 
 ---
 
