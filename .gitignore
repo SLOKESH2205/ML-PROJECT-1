@@ -215,9 +215,13 @@ __pycache__/
 
 # ================= PROJECT SPECIFIC =================
 
-artifacts/
 data/raw/
 
 *.csv
 *.xlsx
 *.pkl
+!artifacts/
+!artifacts/train.csv
+!artifacts/test.csv
+!sample_data/
+!sample_data/*.csv

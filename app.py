@@ -1,6 +1,6 @@
+import os
 import logging
 from io import BytesIO
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,8 +19,14 @@ from src.preprocessing import CLUSTER_FEATURE_COLUMNS, build_customer_features, 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DEFAULT_TRAIN_PATH = Path("artifacts") / "train.csv"
-DEFAULT_TEST_PATH = Path("artifacts") / "test.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ARTIFACTS_DIR = os.path.join(BASE_DIR, "artifacts")
+SAMPLE_DATA_DIR = os.path.join(BASE_DIR, "sample_data")
+
+DEFAULT_TRAIN_PATH = os.path.join(ARTIFACTS_DIR, "train.csv")
+DEFAULT_TEST_PATH = os.path.join(ARTIFACTS_DIR, "test.csv")
+BUNDLED_TRAIN_PATH = os.path.join(SAMPLE_DATA_DIR, "default_train.csv")
+BUNDLED_TEST_PATH = os.path.join(SAMPLE_DATA_DIR, "default_test.csv")
 
 
 def generate_insights(row):
@@ -55,13 +61,71 @@ def load_uploaded_data(uploaded_file):
     return pd.read_excel(uploaded_file)
 
 
+def default_artifacts_available() -> bool:
+    return os.path.exists(DEFAULT_TRAIN_PATH) and os.path.exists(DEFAULT_TEST_PATH)
+
+
+def bundled_sample_available() -> bool:
+    return os.path.exists(BUNDLED_TRAIN_PATH) and os.path.exists(BUNDLED_TEST_PATH)
+
+
+@st.cache_data
+def create_demo_raw_datasets():
+    demo_train_rows = [
+        {"Invoice": 700001, "StockCode": "D1001", "Description": "Starter Kit", "Quantity": 4, "InvoiceDate": "2010-09-05 10:00", "Price": 12.50, "Customer ID": 30001, "Country": "United Kingdom"},
+        {"Invoice": 700101, "StockCode": "D1002", "Description": "Premium Mug", "Quantity": 3, "InvoiceDate": "2010-12-20 09:15", "Price": 18.00, "Customer ID": 30001, "Country": "United Kingdom"},
+        {"Invoice": 700002, "StockCode": "D1003", "Description": "Desk Organizer", "Quantity": 2, "InvoiceDate": "2010-08-12 11:30", "Price": 22.00, "Customer ID": 30002, "Country": "Germany"},
+        {"Invoice": 700102, "StockCode": "D1004", "Description": "Cable Pack", "Quantity": 6, "InvoiceDate": "2010-12-18 15:20", "Price": 7.50, "Customer ID": 30002, "Country": "Germany"},
+        {"Invoice": 700003, "StockCode": "D1005", "Description": "Notebook Set", "Quantity": 5, "InvoiceDate": "2010-10-02 13:45", "Price": 9.00, "Customer ID": 30003, "Country": "France"},
+        {"Invoice": 700103, "StockCode": "D1006", "Description": "Travel Bottle", "Quantity": 2, "InvoiceDate": "2010-12-22 16:40", "Price": 25.00, "Customer ID": 30003, "Country": "France"},
+        {"Invoice": 700004, "StockCode": "D1007", "Description": "Laptop Stand", "Quantity": 1, "InvoiceDate": "2010-07-15 14:10", "Price": 45.00, "Customer ID": 30004, "Country": "Netherlands"},
+        {"Invoice": 700104, "StockCode": "D1008", "Description": "Wireless Mouse", "Quantity": 2, "InvoiceDate": "2010-12-28 12:05", "Price": 20.00, "Customer ID": 30004, "Country": "Netherlands"},
+        {"Invoice": 700005, "StockCode": "D1009", "Description": "Seasonal Card", "Quantity": 2, "InvoiceDate": "2010-03-10 10:00", "Price": 6.00, "Customer ID": 30101, "Country": "Spain"},
+        {"Invoice": 700105, "StockCode": "D1010", "Description": "Mini Basket", "Quantity": 1, "InvoiceDate": "2010-05-12 13:30", "Price": 16.00, "Customer ID": 30101, "Country": "Spain"},
+        {"Invoice": 700006, "StockCode": "D1011", "Description": "Storage Tin", "Quantity": 3, "InvoiceDate": "2010-02-22 12:20", "Price": 13.00, "Customer ID": 30102, "Country": "Ireland"},
+        {"Invoice": 700106, "StockCode": "D1012", "Description": "Apron", "Quantity": 2, "InvoiceDate": "2010-06-01 15:10", "Price": 19.00, "Customer ID": 30102, "Country": "Ireland"},
+    ]
+    demo_test_rows = [
+        {"Invoice": 800001, "StockCode": "E1001", "Description": "Starter Kit", "Quantity": 3, "InvoiceDate": "2010-10-10 10:10", "Price": 12.00, "Customer ID": 40001, "Country": "United Kingdom"},
+        {"Invoice": 800101, "StockCode": "E1002", "Description": "Premium Mug", "Quantity": 2, "InvoiceDate": "2010-12-21 09:20", "Price": 18.50, "Customer ID": 40001, "Country": "United Kingdom"},
+        {"Invoice": 800002, "StockCode": "E1003", "Description": "Desk Organizer", "Quantity": 2, "InvoiceDate": "2010-09-02 11:00", "Price": 21.00, "Customer ID": 40002, "Country": "Germany"},
+        {"Invoice": 800102, "StockCode": "E1004", "Description": "Cable Pack", "Quantity": 5, "InvoiceDate": "2010-12-27 14:10", "Price": 7.00, "Customer ID": 40002, "Country": "Germany"},
+        {"Invoice": 800003, "StockCode": "E1005", "Description": "Notebook Set", "Quantity": 4, "InvoiceDate": "2010-02-14 10:30", "Price": 8.50, "Customer ID": 40101, "Country": "France"},
+        {"Invoice": 800103, "StockCode": "E1006", "Description": "Travel Bottle", "Quantity": 2, "InvoiceDate": "2010-05-18 15:00", "Price": 24.00, "Customer ID": 40101, "Country": "France"},
+        {"Invoice": 800004, "StockCode": "E1007", "Description": "Tea Set", "Quantity": 1, "InvoiceDate": "2010-01-25 09:40", "Price": 27.00, "Customer ID": 40102, "Country": "Portugal"},
+        {"Invoice": 800104, "StockCode": "E1008", "Description": "Candle Trio", "Quantity": 4, "InvoiceDate": "2010-06-02 18:20", "Price": 7.50, "Customer ID": 40102, "Country": "Portugal"},
+    ]
+    return pd.DataFrame(demo_train_rows), pd.DataFrame(demo_test_rows)
+
+
+def get_default_dataset_status():
+    if default_artifacts_available():
+        return {
+            "source": "artifacts",
+            "warning": "",
+            "caption": "Default mode uses the saved training and test datasets from the `artifacts/` folder.",
+        }
+    if bundled_sample_available():
+        return {
+            "source": "sample_data",
+            "warning": "Artifact datasets were not found. Using the bundled sample dataset for demo mode.",
+            "caption": "Default mode is using bundled sample CSVs from `sample_data/` because deployment environments may not include `artifacts/`.",
+        }
+    return {
+        "source": "demo",
+        "warning": "Demo dataset not found. Please upload data or switch mode.",
+        "caption": "Default mode is running on a small in-memory demo dataset.",
+    }
+
+
 @st.cache_data
 def load_default_raw_datasets():
-    if not DEFAULT_TRAIN_PATH.exists() or not DEFAULT_TEST_PATH.exists():
-        raise FileNotFoundError(
-            "Default datasets were not found. Expected artifacts/train.csv and artifacts/test.csv."
-        )
-    return pd.read_csv(DEFAULT_TRAIN_PATH), pd.read_csv(DEFAULT_TEST_PATH)
+    dataset_status = get_default_dataset_status()
+    if dataset_status["source"] == "artifacts":
+        return pd.read_csv(DEFAULT_TRAIN_PATH), pd.read_csv(DEFAULT_TEST_PATH)
+    if dataset_status["source"] == "sample_data":
+        return pd.read_csv(BUNDLED_TRAIN_PATH), pd.read_csv(BUNDLED_TEST_PATH)
+    return create_demo_raw_datasets()
 
 
 @st.cache_data
@@ -722,6 +786,10 @@ def get_default_persona_lookup():
 def render_single_prediction_mode():
     st.header("Single Prediction")
     st.write("Score one customer profile using the default trained model and map the result to a business-friendly risk segment.")
+    dataset_status = get_default_dataset_status()
+    if dataset_status["warning"]:
+        st.warning(dataset_status["warning"])
+    st.caption(dataset_status["caption"])
 
     model_service = train_default_model_service()
     persona_options = get_default_persona_lookup()
@@ -821,10 +889,13 @@ st.markdown(
 
 try:
     if mode == "Model Insights":
+        dataset_status = get_default_dataset_status()
+        if dataset_status["warning"]:
+            st.warning(dataset_status["warning"])
         _, test_raw_df, _, test_customer_df, clustering_meta = prepare_default_datasets()
         model_service = train_default_model_service()
         result_df = model_service.score_customer_df(test_customer_df)
-        st.caption("Default mode uses the saved training and test datasets from the `artifacts/` folder.")
+        st.caption(dataset_status["caption"])
         render_dataset_dashboard(
             input_df=test_raw_df,
             clustering_meta=clustering_meta,
@@ -836,7 +907,11 @@ try:
             impact_horizon_days=impact_horizon_days,
             show_advanced=show_advanced,
             dataset_label="the default holdout test dataset",
-            success_message="Default model insights loaded from the saved training/test artifacts.",
+            success_message=(
+                "Default model insights loaded from the saved training/test artifacts."
+                if dataset_status["source"] == "artifacts"
+                else "Default model insights loaded with fallback demo data."
+            ),
         )
     elif mode == "Upload Dataset":
         uploaded_file = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx", "xls"])
